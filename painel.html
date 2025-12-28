@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Severo Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; overflow-x: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { width: 250px; height: 100vh; position: fixed; top: 0; left: 0; background-color: #212529; padding-top: 20px; z-index: 1000; overflow-y: auto; }
+        .sidebar-header { text-align: center; color: #0d6efd; font-weight: bold; font-size: 1.5rem; margin-bottom: 30px; }
+        .nav-pills .nav-link { color: #adb5bd; border-radius: 0; padding: 15px 20px; font-size: 1.1rem; cursor: pointer; text-align: left; }
+        .nav-pills .nav-link:hover { background-color: #2c3034; color: white; }
+        .nav-pills .nav-link.active { background-color: #0d6efd; color: white; }
+        .nav-pills .nav-link i { width: 30px; text-align: center; margin-right: 10px; }
+        .content-wrapper { margin-left: 250px; padding: 30px; }
+        .card-pc { transition: transform 0.2s; border: 1px solid #dee2e6; }
+        .card-pc:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .pc-offline { border-top: 5px solid #dc3545; background-color: #fff5f5; }
+        .pc-livre { border-top: 5px solid #198754; } 
+        .pc-logado { border-top: 5px solid #0d6efd; } 
+        .chat-container { display: flex; height: 600px; background: white; border: 1px solid #ddd; border-radius: 10px; overflow: hidden; }
+        .chat-list { width: 30%; border-right: 1px solid #ddd; background: #f8f9fa; overflow-y: auto; }
+        .chat-item { padding: 15px; cursor: pointer; border-bottom: 1px solid #eee; transition: 0.2s; }
+        .chat-item:hover, .chat-item.active { background: #e9ecef; }
+        .chat-main { width: 70%; display: flex; flex-direction: column; background: #fff; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; background: #f4f6f9; }
+        .msg-bubble { max-width: 70%; padding: 10px 15px; border-radius: 15px; margin-bottom: 10px; position: relative; }
+        .msg-admin { background: #0d6efd; color: white; align-self: flex-end; }
+        .msg-cliente { background: #e9ecef; color: #333; align-self: flex-start; }
+        #img-tela-remota { width: 100%; border: 2px solid #333; cursor: crosshair; }
+        @keyframes blink-animation { 0% { background-color: #212529; color: #adb5bd; } 50% { background-color: #198754; color: white; } 100% { background-color: #212529; color: #adb5bd; } }
+        .piscar-verde { animation: blink-animation 1s infinite; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">DATISEVERO</div>
+        <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist">
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#content-pcs" type="button"><i class="fas fa-desktop"></i> Computadores</button>
+            <button class="nav-link" id="btn-suporte-tab" data-bs-toggle="pill" data-bs-target="#content-suporte" type="button" onclick="pararPiscar()"><i class="fas fa-comments"></i> Suporte</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#content-impressao" type="button"><i class="fas fa-print"></i> Impressão</button>
+            <button class="nav-link text-warning" data-bs-toggle="pill" data-bs-target="#content-pastas" type="button"><i class="fas fa-folder-open"></i> Arquivos Rede</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#content-setorlog" type="button"><i class="fas fa-clipboard-list"></i> Logs Arquivos</button>
+            <button class="nav-link text-info" data-bs-toggle="pill" data-bs-target="#content-icones-arq" type="button"><i class="fas fa-icons"></i> Ícones Arquivos</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#content-ramais" type="button"><i class="fas fa-phone"></i> Ramais</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#content-setores" type="button"><i class="fas fa-layer-group"></i> Setores</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#content-cadastro" type="button"><i class="fas fa-users"></i> Usuários</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#content-quiosque" type="button"><i class="fas fa-th"></i> Quiosque</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#content-logs" type="button"><i class="fas fa-list"></i> Logs Sistema</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#content-restricoes" type="button"><i class="fas fa-ban"></i> Restrições</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#content-config" type="button"><i class="fas fa-cogs"></i> Configurações</button>
+            <button class="nav-link text-primary" data-bs-toggle="pill" data-bs-target="#content-datinet" type="button"><i class="fas fa-globe"></i> DatiNet</button>
+        </div>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="tab-content" id="v-pills-tabContent">
+            
+            <div class="tab-pane fade" id="content-pastas">
+                <h3 class="mb-4 text-warning">Gerenciar Pastas de Rede</h3>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card p-4 shadow-sm">
+                            <h5 class="mb-3">Nova Pasta Compartilhada</h5>
+                            <form action="/acao/add_pasta" method="POST">
+                                <label>Nome Visível</label><input name="nome" class="form-control mb-2" required>
+                                <label>Caminho Real (Servidor)</label><input name="caminho" class="form-control mb-2" placeholder="Ex: C:\Arquivos\RH" required>
+                                
+                                <div class="form-check form-switch mb-3 mt-2">
+                                    <input class="form-check-input" type="checkbox" name="pode_escrever" id="chkEscritaNew" checked>
+                                    <label class="form-check-label fw-bold" for="chkEscritaNew">Permitir Escrita (Upload/Delete)</label>
+                                </div>
+
+                                <label class="fw-bold mt-2">Permissões (Quem vê?):</label>
+                                <div class="card p-2 mb-3 bg-light" style="max-height: 150px; overflow-y: auto;">
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="setores_pasta" value="Todos" checked><label>Todos</label></div>
+                                    {% for s in setores %}
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="setores_pasta" value="{{ s.nome }}"><label>{{ s.nome }}</label></div>
+                                    {% endfor %}
+                                </div>
+                                <button class="btn btn-warning w-100">Adicionar</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card shadow-sm"><table class="table table-hover"><thead><tr><th>Nome</th><th>Caminho</th><th>Acesso</th><th>Setores</th><th>Ação</th></tr></thead><tbody>
+                            {% for p in pastas_setor %}
+                            <tr>
+                                <td>{{ p.nome_exibicao }}</td>
+                                <td><small>{{ p.caminho_rede }}</small></td>
+                                <td>{% if p.permite_escrita %}<span class="badge bg-success">Leitura/Escrita</span>{% else %}<span class="badge bg-warning text-dark">Somente Leitura</span>{% endif %}</td>
+                                <td><span class="badge bg-secondary">{{ p.setores_permitidos }}</span></td>
+                                <td><button class="btn btn-sm btn-info" onclick='editarPasta({{ p.id }}, "{{ p.nome_exibicao }}", "{{ p.caminho_rede.replace("\\", "\\\\") }}", "{{ p.setores_permitidos }}", "{{ p.permite_escrita }}")'>✏</button> <a href="/acao/del_pasta/{{ p.id }}" class="btn btn-danger btn-sm">X</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody></table></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="content-icones-arq">
+                <h3 class="mb-4 text-info">Ícones por Extensão</h3>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card p-4 shadow-sm">
+                            <h5 class="mb-3">Cadastrar Ícone</h5>
+                            <form action="/acao/add_arquivo_icone" method="POST" enctype="multipart/form-data">
+                                <label class="fw-bold">Extensão do Arquivo</label>
+                                <input name="extensao" class="form-control mb-2" placeholder="Ex: .pdf, .docx, .mp4" required>
+                                <label class="fw-bold">Imagem do Ícone</label>
+                                <input type="file" name="arquivo_imagem" class="form-control mb-3" required>
+                                <button class="btn btn-info text-white w-100 fw-bold">Salvar Ícone</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card shadow-sm p-3">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light"><tr><th>Ícone</th><th>Extensão</th><th>Arquivo</th><th>Ação</th></tr></thead>
+                                <tbody>
+                                    {% for ic in arquivos_icones %}
+                                    <tr>
+                                        <td><img src="/api/icon/{{ ic.nome_arquivo }}" width="40"></td>
+                                        <td class="fw-bold text-primary">{{ ic.extensao }}</td>
+                                        <td class="small text-muted">{{ ic.nome_arquivo }}</td>
+                                        <td><a href="/acao/del_arquivo_icone/{{ ic.id }}" class="btn btn-danger btn-sm">X</a></td>
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="4" class="text-center text-muted">Nenhum ícone personalizado cadastrado.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="content-setorlog">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="text-info">Auditoria de Arquivos</h3>
+                    <a href="/acao/limpar_logs_arquivos" class="btn btn-outline-danger btn-sm">Limpar Histórico</a>
+                </div>
+                <div class="card shadow-sm">
+                    <div class="table-responsive" style="max-height: 700px; overflow-y: auto;">
+                        <table class="table table-striped table-hover align-middle">
+                            <thead class="table-dark sticky-top"><tr><th>Data/Hora</th><th>PC</th><th>Usuário</th><th>Ação</th><th>Arquivo / Caminho</th></tr></thead>
+                            <tbody>
+                                {% for log in logs_arquivos %}
+                                <tr>
+                                    <td>{{ log.data_hora.strftime('%d/%m %H:%M:%S') }}</td><td class="fw-bold">{{ log.hostname }}</td><td>{{ log.usuario }}</td>
+                                    <td>{% if 'UPLOAD' in log.acao %}<span class="badge bg-success">ENVIOU</span>{% elif 'EXCLUIU' in log.acao %}<span class="badge bg-danger">APAGOU</span>{% elif 'DOWNLOAD' in log.acao %}<span class="badge bg-primary">BAIXOU</span>{% else %}<span class="badge bg-secondary">{{ log.acao }}</span>{% endif %}</td>
+                                    <td class="text-muted small">{{ log.arquivo }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="content-datinet">
+                <h3 class="mb-4 text-primary"><i class="fas fa-globe"></i> Configuração DatiNet (Ícones)</h3>
+                <div class="card p-4 shadow-sm">
+                    <form action="/acao/configurar" method="POST" enctype="multipart/form-data">
+                        <div class="alert alert-info">A pasta raiz do DatiNet agora é configurada em "Configurações Gerais".</div>
+                        <div class="row">
+                            <div class="col-md-4 text-center"><label class="fw-bold">Ícone Chrome</label><br>{% if config.icon_chrome %}<img src="/api/icon/{{ config.icon_chrome }}" width="64">{% endif %}<input type="file" class="form-control" name="icon_chrome"></div>
+                            <div class="col-md-4 text-center"><label class="fw-bold">Ícone Firefox</label><br>{% if config.icon_firefox %}<img src="/api/icon/{{ config.icon_firefox }}" width="64">{% endif %}<input type="file" class="form-control" name="icon_firefox"></div>
+                            <div class="col-md-4 text-center"><label class="fw-bold">Ícone Edge</label><br>{% if config.icon_edge %}<img src="/api/icon/{{ config.icon_edge }}" width="64">{% endif %}<input type="file" class="form-control" name="icon_edge"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold mt-3">Salvar Ícones</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="tab-pane fade show active" id="content-pcs">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                    <h3>Monitoramento</h3>
+                    <button class="btn btn-warning fw-bold" onclick="abrirModalAviso('todos', '')">📢 Enviar Aviso Geral</button>
+                </div>
+                <div class="row" id="lista-pcs">
+                    {% for pc in computadores %}
+                    <div class="col-md-4 mb-4" id="card-{{ pc.id }}">
+                        <div class="card card-pc p-4 text-center {% if pc.status == 'offline' %}pc-offline{% elif pc.status == 'logado' %}pc-logado{% else %}pc-livre{% endif %}">
+                            <h4 class="fw-bold">{{ pc.hostname }}</h4>
+                            <div class="mb-3"><span class="badge rounded-pill px-3 py-2 {% if pc.status == 'offline' %}bg-danger{% elif pc.status == 'logado' %}bg-primary{% else %}bg-success{% endif %}">{{ pc.status|upper }}</span></div>
+                            <p class="text-muted mb-4 user-text">{% if pc.usuario_atual %}👤 {{ pc.usuario_atual }}{% else %}--{% endif %}</p>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-primary" onclick="abrirSuporte('{{ pc.hostname }}')">💬 Chat</button>
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">⚡ Ações</button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="solicitarRemoto('{{ pc.hostname }}')">🖥️ Acesso Remoto</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" onclick="abrirModalAviso('individual', '{{ pc.hostname }}')">📩 Aviso</a></li>
+                                        <li><a class="dropdown-item" href="/acao/comando_remoto/{{ pc.id }}/reiniciar">🔄 Reiniciar</a></li>
+                                        <li><a class="dropdown-item" href="/acao/comando_remoto/{{ pc.id }}/desligar">🛑 Desligar</a></li>
+                                        <li><a class="dropdown-item" href="/acao/comando_remoto/{{ pc.id }}/deslogar">🚪 Deslogar</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="/acao/del_computador/{{ pc.id }}" onclick="return confirm('Excluir?')">🗑️ Excluir</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}<div class="alert alert-secondary">Nenhuma máquina conectada.</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="content-suporte">
+                <div class="d-flex justify-content-between mb-2"><h3>Atendimento</h3><a href="/acao/limpar_chat_tudo" class="btn btn-dark btn-sm">Limpar Tudo</a></div>
+                <div class="chat-container">
+                    <div class="chat-list" id="lista-chat-clientes">
+                        {% for pc in computadores %}
+                        <div class="chat-item" onclick="carregarChat('{{ pc.hostname }}')" id="chat-item-{{ pc.hostname }}"><h6>{{ pc.hostname }}</h6><small class="text-muted" id="preview-{{ pc.hostname }}">{% if pc.usuario_atual %}👤 {{ pc.usuario_atual }}{% else %}...{% endif %}</small></div>
+                        {% endfor %}
+                    </div>
+                    <div class="chat-main">
+                        <div class="chat-header p-3 bg-primary text-white d-flex justify-content-between align-items-center"><span>Conversa com: <span id="chat-titulo" class="fw-bold">...</span></span><button class="btn btn-danger btn-sm" onclick="finalizarAtendimento()">🛑 Finalizar</button></div>
+                        <div class="chat-messages" id="chat-msgs-area"></div>
+                        <div class="p-3 bg-white border-top"><div class="input-group"><input type="text" id="chat-input-global" class="form-control" placeholder="Mensagem..."><button class="btn btn-primary" onclick="enviarChatGlobal()">Enviar</button></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="content-impressao">
+                <div class="d-flex justify-content-between align-items-center mb-3"><h3>Gestão de Impressoras</h3><div class="alert alert-info py-1 mb-0"><small>Mapeamento Automático</small></div></div>
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="card p-3 shadow-sm mb-3">
+                            <h5 class="mb-3">🖨️ Nova Impressora</h5>
+                            <form action="/acao/add_impressora" method="POST">
+                                <label class="fw-bold">Nome Visível</label><input name="nome_exibicao" class="form-control mb-2" required>
+                                <label class="fw-bold">Caminho de Rede</label><input name="caminho_rede" class="form-control mb-2" placeholder="\\SERVER\HP" required>
+                                <label class="fw-bold mt-2">Setores:</label>
+                                <div class="card p-2 mb-3 bg-light" style="max-height: 150px; overflow-y: auto;">
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="setores_impressora" value="Todos" checked><label>Todos</label></div>
+                                    {% for s in setores %}
+                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="setores_impressora" value="{{ s.nome }}"><label>{{ s.nome }}</label></div>
+                                    {% endfor %}
+                                </div>
+                                <button class="btn btn-primary w-100">Salvar</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card shadow-sm">
+                            <ul class="list-group list-group-flush">
+                                {% for imp in impressoras %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center"><div><strong class="text-primary">{{ imp.nome_exibicao }}</strong><br><small class="text-muted">{{ imp.caminho_rede }}</small><br><span class="badge bg-secondary">{{ imp.setores_permitidos }}</span></div><a href="/acao/del_impressora/{{ imp.id }}" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="content-ramais"><h3 class="mb-4">Ramais</h3><div class="row"><div class="col-md-4"><div class="card p-4"><form action="/acao/add_ramal" method="POST"><input name="nome" class="form-control mb-2" placeholder="Nome"><input name="setor" class="form-control mb-2" placeholder="Setor"><input name="numero" class="form-control mb-2" placeholder="Ramal"><button class="btn btn-success w-100">Salvar</button></form></div></div><div class="col-md-8"><div class="card"><table class="table table-hover"><thead><tr><th>Nome</th><th>Setor</th><th>Ramal</th><th>Ação</th></tr></thead><tbody>{% for r in ramais %}<tr><td>{{ r.nome }}</td><td>{{ r.setor }}</td><td>{{ r.numero }}</td><td><a href="/acao/del_ramal/{{ r.id }}" class="btn btn-danger btn-sm">X</a></td></tr>{% endfor %}</tbody></table></div></div></div></div>
+            
+            <div class="tab-pane fade" id="content-setores">
+                <h3 class="mb-4">Setores</h3>
+                <div class="row">
+                    <div class="col-md-4"><div class="card p-4 shadow-sm"><h5 class="mb-3">Novo Setor</h5><form action="/acao/add_setor" method="POST"><input name="nome" class="form-control mb-3" required><button class="btn btn-primary w-100">Adicionar</button></form></div></div>
+                    <div class="col-md-8"><div class="card shadow-sm"><table class="table table-hover mb-0"><thead class="table-light"><tr><th>ID</th><th>Nome</th><th>Ação</th></tr></thead><tbody>{% for s in setores %}<tr><td>{{ s.id }}</td><td class="fw-bold">{{ s.nome }}</td><td><a href="/acao/del_setor/{{ s.id }}" class="btn btn-danger btn-sm">Excluir</a></td></tr>{% endfor %}</tbody></table></div></div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="content-cadastro">
+                <div class="d-flex justify-content-between mb-4"><h3>Usuários</h3><button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAddUser">+ Novo</button></div>
+                <div class="card shadow-sm"><table class="table table-hover mb-0 align-middle"><thead class="table-dark"><tr><th>Nome</th><th>Login</th><th>Setores</th><th>Restrição?</th><th>Ações</th></tr></thead><tbody>{% for u in usuarios %}<tr><td>{{ u.nome }} {{ u.sobrenome }}</td><td class="fw-bold">{{ u.usuario }}</td><td><span class="badge bg-secondary">{{ u.setor }}</span></td><td>{% if u.sem_restricao %}<span class="badge bg-warning text-dark">LIVRE</span>{% else %}<span class="badge bg-info">Restrito</span>{% endif %}</td><td><button class="btn btn-warning btn-sm" onclick='editarUser({{ u.id }}, "{{ u.nome }}", "{{ u.sobrenome }}", "{{ u.usuario }}", "{{ u.senha }}", "{{ u.setor }}", {{ u.sem_restricao|lower }})'><i class="fas fa-edit"></i></button> <a href="/acao/del_usuario/{{ u.id }}" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></a></td></tr>{% endfor %}</tbody></table></div>
+            </div>
+
+            <div class="tab-pane fade" id="content-quiosque">
+                <h3 class="mb-4">Atalhos</h3>
+                <div class="row">
+                    <div class="col-md-4"><div class="card p-4"><h5 class="mb-3">Novo Atalho</h5><form action="/acao/add_atalho" method="POST" enctype="multipart/form-data"><input name="nome" class="form-control mb-2" placeholder="Nome" required><select name="tipo" class="form-select mb-2"><option value="programa">Programa</option><option value="site">Site</option></select><input type="file" name="arquivo_icone" class="form-control mb-2"><input name="comando" class="form-control mb-2" placeholder="Caminho EXE ou URL" required><label class="fw-bold mt-2">Permissões:</label><div class="card p-2 mb-3 bg-light" style="max-height: 200px; overflow-y: auto;"><div class="form-check"><input class="form-check-input" type="checkbox" name="setores_atalho" value="Livre" checked id="chkLivreNew"><label for="chkLivreNew">🌐 Livre (Todos)</label></div><hr class="my-1">{% for s in setores %}<div class="form-check"><input class="form-check-input" type="checkbox" name="setores_atalho" value="{{ s.nome }}"><label>{{ s.nome }}</label></div>{% endfor %}</div><button class="btn btn-primary w-100">Adicionar</button></form></div></div>
+                    <div class="col-md-8"><div class="card"><table class="table table-hover"><thead><tr><th>Ícone</th><th>Nome</th><th>Setores</th><th>Ação</th></tr></thead><tbody>{% for atalho in atalhos %}<tr><td>{% if atalho.icone %}<img src="/api/icon/{{ atalho.icone }}" width="32">{% endif %}</td><td>{{ atalho.nome }}</td><td><small class="text-muted">{{ atalho.setores }}</small></td><td><button class="btn btn-warning btn-sm" onclick='editarAtalho({{ atalho.id }}, "{{ atalho.nome }}", "{{ atalho.comando }}", "{{ atalho.tipo }}", "{{ atalho.setores }}")'><i class="fas fa-edit"></i></button> <a href="/acao/del_atalho/{{ atalho.id }}" class="btn btn-danger btn-sm">X</a></td></tr>{% endfor %}</tbody></table></div></div>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="content-logs">
+                <div class="d-flex justify-content-between align-items-center mb-3"><h3>Logs Sistema</h3><a href="/acao/limpar_logs_acesso" class="btn btn-danger" onclick="return confirm('Apagar logs?')">🗑️ Limpar</a></div>
+                <h5 class="text-primary mt-4">Histórico Chat</h5>
+                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;"><table class="table table-bordered table-sm"><thead class="table-light"><tr><th>Data</th><th>PC</th><th>User</th><th>Conversa</th></tr></thead><tbody>{% for chat in chats_finalizados %}<tr><td>{{ chat.data_fim.strftime('%d/%m/%Y %H:%M') }}</td><td>{{ chat.computador }}</td><td>{{ chat.usuario }}</td><td><pre style="font-size: 0.8rem; background: #f8f9fa;">{{ chat.conversa_completa }}</pre></td></tr>{% endfor %}</tbody></table></div>
+                <h5 class="text-secondary mt-5">Acessos</h5>
+                <table class="table table-striped"><thead><tr><th>Data</th><th>PC</th><th>User</th><th>Ação</th></tr></thead><tbody>{% for log in logs %}<tr><td>{{ log.data_hora }}</td><td>{{ log.computador }}</td><td>{{ log.usuario }}</td><td>{{ log.acao }}</td></tr>{% endfor %}</tbody></table>
+            </div>
+
+            <div class="tab-pane fade" id="content-restricoes"><h3 class="mb-4">Bloqueios</h3><div class="row"><div class="col-md-5"><div class="card p-4"><form action="/acao/add_restricao" method="POST"><select name="tipo" class="form-select mb-2"><option value="site">Site</option><option value="programa">Programa</option></select><input name="alvo" class="form-control mb-2" placeholder="Nome Janela / Site"><button class="btn btn-danger w-100">Bloquear</button></form></div></div><div class="col-md-7"><ul class="list-group">{% for res in restricoes %}<li class="list-group-item">{{ res.alvo }} <a href="/acao/del_restricao/{{ res.id }}" class="btn btn-sm btn-danger float-end">X</a></li>{% endfor %}</ul></div></div></div>
+            
+            <div class="tab-pane fade" id="content-config">
+                <h3 class="mb-4">Configurações Gerais</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <form action="/acao/configurar" method="POST" enctype="multipart/form-data" class="card p-4 shadow-sm">
+                            <h5 class="mb-3 text-danger fw-bold"><i class="fas fa-lock"></i> Senha Mestre</h5>
+                            <div class="mb-3"><label class="fw-bold">Nova Senha Admin/Mestre</label><input type="text" class="form-control" name="senha_unica" placeholder="Alterar senha..." value="{{ config.senha_mestre }}"></div>
+                            
+                            <hr>
+                            <h5 class="mb-3 text-primary">Diretórios & Limites</h5>
+                            
+                            <div class="mb-3 bg-light p-2 border rounded">
+                                <label class="fw-bold text-success">📂 Caminho Unidade Z: (Padrão)</label>
+                                <input type="text" class="form-control" name="caminho_drive_z" value="{{ config.caminho_drive_z }}" placeholder="Ex: C:\DriveZ">
+                                <small class="text-muted">A pasta do usuário será criada dentro deste caminho.</small>
+                            </div>
+
+                            <div class="mb-3"><label class="fw-bold">Pasta Perfis DatiNet (Navegador)</label><input type="text" class="form-control" name="caminho_datinet_global" value="{{ config.caminho_datinet_global }}"></div>
+                            <div class="mb-3"><label class="fw-bold">Pasta Cofres</label><input type="text" class="form-control" name="caminho_cofre_global" value="{{ config.caminho_cofre_global }}"></div>
+
+                            <div class="mb-3 border p-2 rounded bg-warning bg-opacity-10">
+                                <label class="fw-bold">Limite Máximo de Upload/Download (MB)</label>
+                                <input type="number" class="form-control" name="max_upload_size_mb" value="{{ config.max_upload_size_mb }}">
+                                <small class="text-muted">Ex: 1024 = 1GB. Defina o tamanho máximo de arquivos permitidos.</small>
+                            </div>
+
+                            <hr><h5 class="mb-3 text-primary">Aparência</h5>
+                            <div class="mb-3"><label class="fw-bold text-primary">Saudação Chat</label><input type="text" class="form-control" name="chat_saudacao" value="{{ config.chat_saudacao }}"></div>
+                            <div class="mb-3 border p-2 rounded bg-light"><label class="fw-bold text-primary">1. Papel Login</label><input type="file" class="form-control" name="file_login"></div>
+                            <div class="mb-3 border p-2 rounded bg-light"><label class="fw-bold text-success">2. Papel Desktop</label><input type="file" class="form-control" name="file_desktop"></div>
+                            <div class="mb-3 border p-2 rounded bg-light"><label class="fw-bold text-info">3. Papel Chat</label><input type="file" class="form-control" name="file_chat"></div>
+                            
+                            <div class="mb-3 border p-2 rounded bg-light">
+                                <label class="fw-bold text-warning">4. Papel Quiosque</label>
+                                <input type="file" class="form-control" name="file_quiosque">
+                            </div>
+
+                            <div class="mb-3"><label class="fw-bold">Logo</label><input type="file" class="form-control" name="logo_img"></div>
+                            
+                            <hr>
+                            <h5 class="mb-3 text-secondary"><i class="fas fa-code"></i> Créditos da Tela de Login</h5>
+                            <div class="mb-2">
+                                <label class="fw-bold">Linha 1 (Engenheiro)</label>
+                                <input type="text" class="form-control" name="dev_linha1" value="{{ config.dev_linha1 }}">
+                            </div>
+                            <div class="mb-2">
+                                <label class="fw-bold">Linha 2 (Programador)</label>
+                                <input type="text" class="form-control" name="dev_linha2" value="{{ config.dev_linha2 }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="fw-bold">Linha 3 (Ano/Versão)</label>
+                                <input type="text" class="form-control" name="dev_linha3" value="{{ config.dev_linha3 }}">
+                            </div>
+
+                            <hr><h5 class="mb-3 text-danger">Termos de Uso</h5>
+                            <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="checkTermos" name="termos_ativo" {% if config.termos_ativo %}checked{% endif %}><label class="form-check-label fw-bold" for="checkTermos">Exigir Termos</label></div>
+                            <div class="mb-3"><textarea class="form-control" name="termos_texto" rows="5">{{ config.termos_texto }}</textarea></div>
+                            <hr><h5 class="mb-3 text-purple">Botão Especial (DataBit)</h5>
+                            <div class="mb-3"><label>Nome</label><input type="text" class="form-control" name="databit_nome" value="{{ config.databit_nome }}"></div>
+                            <div class="mb-3"><label>Comando</label><input type="text" class="form-control" name="databit_comando" value="{{ config.databit_comando }}"></div>
+                            <button type="submit" class="btn btn-primary w-100 fw-bold py-2">SALVAR TUDO</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalAddUser" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="/acao/add_usuario" method="POST"><div class="modal-header"><h5 class="modal-title">Novo Usuário</h5></div><div class="modal-body"><input class="form-control mb-2" name="nome" placeholder="Nome" required><input class="form-control mb-2" name="sobrenome" placeholder="Sobrenome"><input class="form-control mb-2" name="usuario" placeholder="Login" required><input class="form-control mb-2" name="senha" placeholder="Senha" required><div class="form-check form-switch my-3"><input class="form-check-input" type="checkbox" name="sem_restricao" id="chkSemRestricaoNew"><label class="form-check-label fw-bold text-danger" for="chkSemRestricaoNew">🔓 Sem Restrição</label></div><label class="fw-bold mt-2">Setores:</label><div class="card p-2 bg-light">{% for s in setores %}<div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" name="setores_lista" value="{{ s.nome }}"><label class="form-check-label">{{ s.nome }}</label></div>{% endfor %}</div></div><div class="modal-footer"><button class="btn btn-success">Criar</button></div></form></div></div></div>
+    
+    <div class="modal fade" id="modalEditUser" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="/acao/edit_usuario" method="POST"><div class="modal-header"><h5 class="modal-title">Editar Usuário</h5></div><div class="modal-body"><input type="hidden" name="id_usuario" id="e_id"><input class="form-control mb-2" name="nome" id="e_nome"><input class="form-control mb-2" name="sobrenome" id="e_sobrenome"><input class="form-control mb-2" name="usuario" id="e_user"><input class="form-control mb-2" name="senha" id="e_senha"><div class="form-check form-switch my-3"><input class="form-check-input" type="checkbox" name="sem_restricao" id="e_sem_restricao"><label class="form-check-label fw-bold text-danger" for="e_sem_restricao">🔓 Sem Restrição</label></div><label class="fw-bold mt-2">Setores:</label><div class="card p-2 bg-light">{% for s in setores %}<div class="form-check"><input class="form-check-input chk-setor-edit" type="checkbox" name="setores_lista" value="{{ s.nome }}" id="chk_u_{{loop.index}}"><label class="form-check-label">{{ s.nome }}</label></div>{% endfor %}</div></div><div class="modal-footer"><button class="btn btn-success">Salvar</button></div></form></div></div></div>
+
+    <div class="modal fade" id="modalEditAtalho" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="/acao/edit_atalho" method="POST" enctype="multipart/form-data"><div class="modal-header bg-warning"><h5 class="modal-title">Editar Atalho</h5></div><div class="modal-body"><input type="hidden" name="id_atalho" id="ea_id"><label>Nome</label><input class="form-control mb-2" name="nome" id="ea_nome"><label>Tipo</label><select name="tipo" class="form-select mb-2" id="ea_tipo"><option value="programa">Programa</option><option value="site">Site</option></select><label>Comando</label><input class="form-control mb-2" name="comando" id="ea_comando"><label>Ícone</label><input type="file" name="arquivo_icone" class="form-control mb-2"><label class="fw-bold mt-2">Permissões:</label><div class="card p-2 bg-light"><div class="form-check"><input class="form-check-input chk-atalho-edit" type="checkbox" name="setores_atalho" value="Livre" id="ea_livre"><label for="ea_livre">🌐 Livre</label></div><hr class="my-1">{% for s in setores %}<div class="form-check"><input class="form-check-input chk-atalho-edit" type="checkbox" name="setores_atalho" value="{{ s.nome }}"><label class="form-check-label">{{ s.nome }}</label></div>{% endfor %}</div></div><div class="modal-footer"><button class="btn btn-primary">Salvar</button></div></form></div></div></div>
+
+    <div class="modal fade" id="modalEditPasta" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="/acao/edit_pasta" method="POST"><div class="modal-header bg-info"><h5 class="modal-title">Editar Pasta</h5></div><div class="modal-body"><input type="hidden" name="id_pasta" id="ep_id"><label>Nome</label><input class="form-control mb-2" name="nome" id="ep_nome"><label>Caminho</label><input class="form-control mb-2" name="caminho" id="ep_caminho"><div class="form-check form-switch my-3"><input class="form-check-input" type="checkbox" name="pode_escrever" id="ep_pode_escrever"><label class="form-check-label fw-bold" for="ep_pode_escrever">Permitir Escrita</label></div><label class="fw-bold">Setores:</label><div class="card p-2 bg-light"><div class="form-check"><input class="form-check-input chk-pasta-edit" type="checkbox" name="setores_pasta" value="Todos" id="ep_todos"><label>Todos</label></div>{% for s in setores %}<div class="form-check"><input class="form-check-input chk-pasta-edit" type="checkbox" name="setores_pasta" value="{{ s.nome }}"><label>{{ s.nome }}</label></div>{% endfor %}</div></div><div class="modal-footer"><button class="btn btn-primary">Salvar</button></div></form></div></div></div>
+
+    <div class="modal fade" id="modalRemoto" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header bg-dark text-white"><h5 class="modal-title">Acesso Remoto: <span id="lbl-pc-remoto"></span></h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body bg-secondary text-center p-0"><img id="img-tela-remota" src="" alt="Aguardando conexão..."></div><div class="modal-footer"><small>Clique na imagem para controlar.</small><button type="button" class="btn btn-danger" data-bs-dismiss="modal">Encerrar</button></div></div></div></div>
+    <div class="modal fade" id="modalAviso" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"><input type="hidden" id="aviso-tipo"><input type="hidden" id="aviso-destino"><textarea id="aviso-msg" class="form-control"></textarea><button onclick="enviarAvisoReal()" class="btn btn-primary mt-2">Enviar</button></div></div></div></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const socket = io();
+        
+        socket.on('connect', () => {
+            console.log("Conectado ao servidor!");
+            socket.emit('admin_entrar_painel');
+        });
+
+        let currentChatPc = null; let remotePc = null;
+        
+        function solicitarRemoto(hostname) { 
+            if(confirm("Solicitar controle remoto para " + hostname + "?")) {
+                socket.emit('solicitar_acesso_remoto', {hostname: hostname}); 
+            }
+        }
+        
+        socket.on('iniciar_transmissao_remota', (d) => { 
+            remotePc = d.hostname; 
+            document.getElementById('lbl-pc-remoto').innerText = remotePc; 
+            new bootstrap.Modal(document.getElementById('modalRemoto')).show(); 
+        });
+        
+        socket.on('atualizar_tela_remota', (d) => { 
+            if (remotePc && d.hostname === remotePc) {
+                document.getElementById('img-tela-remota').src = "data:image/jpeg;base64," + d.image; 
+            }
+        });
+        
+        const imgRemota = document.getElementById('img-tela-remota');
+        imgRemota.addEventListener('click', (e) => { 
+            if(!remotePc) return; 
+            const rect = imgRemota.getBoundingClientRect(); 
+            socket.emit('comando_mouse_teclado', {
+                hostname: remotePc, 
+                type: 'click', 
+                x: (e.clientX - rect.left)/rect.width, 
+                y: (e.clientY - rect.top)/rect.height
+            }); 
+        });
+        document.addEventListener('keydown', (e) => { 
+            if(document.getElementById('modalRemoto').classList.contains('show') && remotePc) {
+                socket.emit('comando_mouse_teclado', {hostname: remotePc, type: 'key', key: e.key}); 
+            }
+        });
+        
+        function abrirModalAviso(t, d) { document.getElementById('aviso-tipo').value=t; document.getElementById('aviso-destino').value=d; document.getElementById('aviso-msg').value=''; new bootstrap.Modal(document.getElementById('modalAviso')).show(); }
+        
+        function enviarAvisoReal() { 
+            let t=document.getElementById('aviso-tipo').value, d=document.getElementById('aviso-destino').value, m=document.getElementById('aviso-msg').value; 
+            if(m) {
+                t==='todos' ? socket.emit('enviar_mensagem_geral',{msg:m}) : socket.emit('enviar_mensagem_individual',{hostname:d,msg:m});
+                let modalEl = document.getElementById('modalAviso');
+                let modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+                document.getElementById('aviso-msg').value='';
+            } 
+        }
+
+        function abrirSuporte(h) { document.querySelector('[data-bs-target="#content-suporte"]').click(); carregarChat(h); }
+        function carregarChat(h) { currentChatPc=h; let prev=document.getElementById(`preview-${h}`); document.getElementById('chat-titulo').innerText=`${h} (${prev?prev.innerText:'...'})`; document.querySelectorAll('.chat-item').forEach(el=>el.classList.remove('active')); let it=document.getElementById(`chat-item-${h}`); if(it){it.classList.add('active');it.style.backgroundColor='';} document.getElementById('chat-msgs-area').innerHTML=''; fetch(`/api/get_chat_history/${h}`).then(r=>r.json()).then(msgs=>msgs.forEach(m=>addMsgVisual(m.remetente,m.msg))); }
+        function enviarChatGlobal() { let i=document.getElementById('chat-input-global'); if(i.value&&currentChatPc){ socket.emit('chat_mensagem_admin',{hostname:currentChatPc,msg:i.value}); addMsgVisual('Admin',i.value); i.value=''; } }
+        document.getElementById("chat-input-global").addEventListener("keyup", function(event) { if (event.key === "Enter") { enviarChatGlobal(); } });
+        function finalizarAtendimento() { if(currentChatPc&&confirm(`Finalizar ${currentChatPc}?`)){ socket.emit('admin_finalizar_atendimento',{hostname:currentChatPc}); document.getElementById('chat-msgs-area').innerHTML='<div class="text-center text-muted mt-5"><i>Finalizado.</i></div>'; } }
+        function addMsgVisual(rem, msg) { const div=document.createElement('div'); div.className=`msg-bubble ${rem==='Admin'||rem==='Sistema'?'msg-admin':'msg-cliente'}`; div.innerHTML=`<small style="opacity:0.7">${rem}</small><br>${msg}`; const a=document.getElementById('chat-msgs-area'); a.appendChild(div); a.scrollTop=a.scrollHeight; }
+        function pararPiscar() { document.getElementById('btn-suporte-tab').classList.remove('piscar-verde'); }
+        socket.on('admin_receber_chat', (d) => { if(currentChatPc===d.hostname) addMsgVisual(d.remetente, d.msg); else { let it=document.getElementById(`chat-item-${d.hostname}`); if(it) it.style.backgroundColor='#d1e7dd'; } if(!document.getElementById('btn-suporte-tab').classList.contains('active')) document.getElementById('btn-suporte-tab').classList.add('piscar-verde'); });
+        socket.on('update_painel', (d) => { const c=document.getElementById(`card-${d.id}`); if(c){ let dv=c.querySelector('.card-pc'); dv.className=`card card-pc p-4 text-center ${d.status==='offline'?'pc-offline':(d.status==='logado'?'pc-logado':'pc-livre')}`; dv.querySelector('.badge').innerText=d.status.toUpperCase(); dv.querySelector('.user-text').innerText=d.user?`👤 ${d.user}`:'--'; } });
+        function editarUser(id, n, s, u, p, st_string, sem_restricao) { document.getElementById('e_id').value = id; document.getElementById('e_nome').value = n; document.getElementById('e_sobrenome').value = s; document.getElementById('e_user').value = u; document.getElementById('e_senha').value = p; document.getElementById('e_sem_restricao').checked = sem_restricao; document.querySelectorAll('.chk-setor-edit').forEach(cb => cb.checked = false); if(st_string) { st_string.split(',').forEach(setor => { document.querySelectorAll('.chk-setor-edit').forEach(cb => { if (cb.value === setor.trim()) cb.checked = true; }); }); } new bootstrap.Modal(document.getElementById('modalEditUser')).show(); }
+        function editarAtalho(id, nome, comando, tipo, setores_string) { document.getElementById('ea_id').value = id; document.getElementById('ea_nome').value = nome; document.getElementById('ea_comando').value = comando; document.getElementById('ea_tipo').value = tipo; document.querySelectorAll('.chk-atalho-edit').forEach(cb => cb.checked = false); if(setores_string) { setores_string.split(',').forEach(setor => { document.querySelectorAll('.chk-atalho-edit').forEach(cb => { if (cb.value === setor.trim()) cb.checked = true; }); }); } new bootstrap.Modal(document.getElementById('modalEditAtalho')).show(); }
+        function editarPasta(id, n, c, s_str, pode_escrever) { 
+            document.getElementById('ep_id').value=id; 
+            document.getElementById('ep_nome').value=n; 
+            document.getElementById('ep_caminho').value=c; 
+            document.getElementById('ep_pode_escrever').checked = (pode_escrever === 'True' || pode_escrever === true);
+            document.querySelectorAll('.chk-pasta-edit').forEach(cb=>cb.checked=false); 
+            if(s_str) s_str.split(',').forEach(s=>{ document.querySelectorAll('.chk-pasta-edit').forEach(cb=>{if(cb.value===s.trim())cb.checked=true}) }); 
+            new bootstrap.Modal(document.getElementById('modalEditPasta')).show(); 
+        }
+    </script>
+</body>
+</html>
